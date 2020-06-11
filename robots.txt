@@ -1,1 +1,1 @@
-Sitemap: https://xubujie.github.io/DataScienceBlog/sitemap.xml
+Sitemap: https://xubujie.github.io/blog/sitemap.xml
