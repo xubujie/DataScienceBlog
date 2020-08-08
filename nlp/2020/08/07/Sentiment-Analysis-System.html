@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>基于类别的情感分析系统搭建 | Jay’s Blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="基于类别的情感分析系统搭建" />
+<meta name="author" content="Bujie Xu" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="从0开始搭建情感分析系统" />
+<meta property="og:description" content="从0开始搭建情感分析系统" />
+<link rel="canonical" href="https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html" />
+<meta property="og:url" content="https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html" />
+<meta property="og:site_name" content="Jay’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-08-07T00:00:00-05:00" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Bujie Xu"},"description":"从0开始搭建情感分析系统","mainEntityOfPage":{"@type":"WebPage","@id":"https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html"},"@type":"BlogPosting","url":"https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html","headline":"基于类别的情感分析系统搭建","dateModified":"2020-08-07T00:00:00-05:00","datePublished":"2020-08-07T00:00:00-05:00","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/DataScienceBlog/assets/css/style.css"><link type="application/atom+xml" rel="alternate" href="https://xubujie.github.io/DataScienceBlog/feed.xml" title="Jay's Blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-101512699-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+<link rel="shortcut icon" type="image/x-icon" href="/DataScienceBlog/images/favicon.ico"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>基于类别的情感分析系统搭建 | Jay’s Blog</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="基于类别的情感分析系统搭建" />
+<meta name="author" content="Bujie Xu" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="从0开始搭建情感分析系统" />
+<meta property="og:description" content="从0开始搭建情感分析系统" />
+<link rel="canonical" href="https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html" />
+<meta property="og:url" content="https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html" />
+<meta property="og:site_name" content="Jay’s Blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2020-08-07T00:00:00-05:00" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Bujie Xu"},"description":"从0开始搭建情感分析系统","mainEntityOfPage":{"@type":"WebPage","@id":"https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html"},"@type":"BlogPosting","url":"https://xubujie.github.io/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html","headline":"基于类别的情感分析系统搭建","dateModified":"2020-08-07T00:00:00-05:00","datePublished":"2020-08-07T00:00:00-05:00","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+<link href="https://unpkg.com/@primer/css/dist/primer.css" rel="stylesheet" />
+<link rel="stylesheet" href="//use.fontawesome.com/releases/v5.0.7/css/all.css"><link type="application/atom+xml" rel="alternate" href="https://xubujie.github.io/DataScienceBlog/feed.xml" title="Jay's Blog" /><!-- the google_analytics_id gets auto inserted from the config file -->
+
+
+
+<script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)})(window,document,'script','//www.google-analytics.com/analytics.js','ga');ga('create','UA-101512699-1','auto');ga('require','displayfeatures');ga('send','pageview');</script>
+
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.css" integrity="sha384-zB1R0rpPzHqg7Kpt0Aljp8JPLqbXI3bhnPWROx27a9N0Ll6ZP/+DiW/UqRcLbRjq" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/katex.min.js" integrity="sha384-y23I5Q6l+B6vatafAwxRu/0oK/79VlbSz7Q9aiSZUvyWYIYsd+qj+o24G5ZU2zJz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.11.1/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement( document.body, {
+        delimiters: [
+            {left: "$$", right: "$$", display: true},
+            {left: "[%", right: "%]", display: true},
+            {left: "$", right: "$", display: false}
+        ]}
+        );
+    });
+    </script>
+
+
+<script>
+function wrap_img(fn) {
+    if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") {
+        var elements = document.querySelectorAll(".post img");
+        Array.prototype.forEach.call(elements, function(el, i) {
+            if (el.getAttribute("title") && (el.className != "emoji")) {
+                const caption = document.createElement('figcaption');
+                var node = document.createTextNode(el.getAttribute("title"));
+                caption.appendChild(node);
+                const wrapper = document.createElement('figure');
+                wrapper.className = 'image';
+                el.parentNode.insertBefore(wrapper, el);
+                el.parentNode.removeChild(el);
+                wrapper.appendChild(el);
+                wrapper.appendChild(caption);
+            }
+        });
+    } else { document.addEventListener('DOMContentLoaded', fn); }
+}
+window.onload = wrap_img;
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function(){
+    // add link icon to anchor tags
+    var elem = document.querySelectorAll(".anchor-link")
+    elem.forEach(e => (e.innerHTML = '<i class="fas fa-link fa-xs"></i>'));
+    });
+</script>
+</head><body><header class="site-header">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/DataScienceBlog/">Jay&#39;s Blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/DataScienceBlog/about/">About Me</a><a class="page-link" href="/DataScienceBlog/search/">Search</a><a class="page-link" href="/DataScienceBlog/categories/">Tags</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">基于类别的情感分析系统搭建</h1><p class="page-description">从0开始搭建情感分析系统</p><p class="post-meta post-meta-title"><time class="dt-published" datetime="2020-08-07T00:00:00-05:00" itemprop="datePublished">
+        Aug 7, 2020
+      </time>• 
+          <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+            <span class="p-author h-card" itemprop="name">Bujie Xu</span></span>
+       • <span class="read-time" title="Estimated read time">
+    
+    
+      4 min read
+    
+</span></p>
+
+    
+      <p class="category-tags"><i class="fas fa-tags category-tags-icon"></i></i> 
+      
+        <a class="category-tags-link" href="/DataScienceBlog/categories/#NLP">NLP</a>
+        
+      
+      </p>
+    
+
+    
+      
+        <div class="pb-5 d-flex flex-wrap flex-justify-end">
+          <div class="px-2">
+
+    <a href="https://github.com/xubujie/DataScienceBlog/tree/master/_notebooks/2020-08-07-Sentiment-Analysis-System.ipynb" role="button" target="_blank">
+<img class="notebook-badge-image" src="/DataScienceBlog/assets/badges/github.svg" alt="View On GitHub">
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://mybinder.org/v2/gh/xubujie/DataScienceBlog/master?filepath=_notebooks%2F2020-08-07-Sentiment-Analysis-System.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/DataScienceBlog/assets/badges/binder.svg" alt="Open In Binder"/>
+    </a>
+</div>
+
+          <div class="px-2">
+    <a href="https://colab.research.google.com/github/xubujie/DataScienceBlog/blob/master/_notebooks/2020-08-07-Sentiment-Analysis-System.ipynb" target="_blank">
+        <img class="notebook-badge-image" src="/DataScienceBlog/assets/badges/colab.svg" alt="Open In Colab"/>
+    </a>
+</div>
+        </div>
+      </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <ul class="section-nav">
+<li class="toc-entry toc-h2"><a href="#1.-项目背景和问题描述">1. 项目背景和问题描述 </a></li>
+<li class="toc-entry toc-h2"><a href="#2.-baseline搭建">2. baseline搭建 </a>
+<ul>
+<li class="toc-entry toc-h4"><a href="#获取Overall-Rating">获取Overall Rating </a></li>
+<li class="toc-entry toc-h4"><a href="#获取每一个business的aspect">获取每一个business的aspect </a></li>
+<li class="toc-entry toc-h4"><a href="#获取对于aspect的评价">获取对于aspect的评价 </a></li>
+</ul>
+</li>
+<li class="toc-entry toc-h2"><a href="#4.-结果">4. 结果 </a></li>
+<li class="toc-entry toc-h2"><a href="#4.-其他尝试">4. 其他尝试 </a></li>
+</ul><!--
+#################################################
+### THIS FILE WAS AUTOGENERATED! DO NOT EDIT! ###
+#################################################
+# file to edit: _notebooks/2020-08-07-Sentiment-Analysis-System.ipynb
+-->
+
+<div class="container" id="notebook-container">
+        
+    
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+</div>
+    
+
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="1.-项目背景和问题描述">
+<a class="anchor" href="#1.-%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF%E5%92%8C%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. 项目背景和问题描述<a class="anchor-link" href="#1.-%E9%A1%B9%E7%9B%AE%E8%83%8C%E6%99%AF%E5%92%8C%E9%97%AE%E9%A2%98%E6%8F%8F%E8%BF%B0"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>维基百科的定义里说，文本情感分析是指用自然语言处理、文本挖掘以及计算机语言学等方法来识别和提取原素材中的主观信息。情感分析的目的是找出作者对某个事物的观点。很多人在网上购物或者在外就餐之后，都会通过发表评论来描述自己的体验。对于商家来说，分析这些文本就可以较好的看清楚用户的反馈，从而提升服务质量。另外，在投资领域，情感分析也有所应用。通过分析twitter上对某家公司的整体情感，可以给出大众对这家公司的一个整体看法，从而对投资起到一个指导作用。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>本文将介绍怎么样从0开始搭建一个简单的情感分析系统。所用的到的数据来自<a href="https://www.yelp.com/dataset/documentation/main">Yelp Dataset</a>, Yelp对标国内的大众点评，这个数据集里收集了很多的用户评论信息。下图是来自yelp网站的一个例子。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><img src="/DataScienceBlog/images/copied_from_nb/images/sentiment1.PNG" alt="yelp"></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>在Review Highlights里，我们可以看到一些用户评价，而且Yelp还对评价进行了归类，比如第一类是有对souvenirs的评价，第二类是对electronics的评价。这里的souvenirs和electronics我们可以看作是商品或者是服务的一个维度(Aspect)。我们要搭建的情感分析系统要在传统的情感分析系统上做一点提高。</p>
+<p>我们不断要判断用户评价是否是积极的，而且我们要从用户评价中获取用户是对哪个商品维度所进行的描述，并判断用户对每一个商品维度的情感。
+对于每一条评价，我们想通过系统获取如下结果。</p>
+<p><code>{
+    Business Name: XXXXX, 
+    Overall Rating: X,
+    aspect1: { rating: XXX, pos: [XXX], neg: [XXX]}
+    aspect2: {rating: XXX, pos: [XXX], neg: [XXX]}
+    aspect3: {rating: XXX, pos: [XXX], neg: [XXX]} ……
+    aspect5: {rating: XXX, pos:[xxx], neg:[xxxx]}
+}</code></p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="2.-baseline搭建">
+<a class="anchor" href="#2.-baseline%E6%90%AD%E5%BB%BA" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. baseline搭建<a class="anchor-link" href="#2.-baseline%E6%90%AD%E5%BB%BA"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>在这里，我们用到yelp数据集里的“yelp_academic_dataset_business”和“yelp_academic_dataset_review”。可以通过这个链接查看<a href="https://www.yelp.com/dataset/documentation/main">样本数据</a>。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>我们的baseline包含以下几个部分</p>
+<ol>
+<li>获取每个business的overall Rating</li>
+<li>获取每一个business的aspect</li>
+<li>获取对于aspect的评价<ol>
+<li>对于每个aspect的综合评价</li>
+<li>从用户评论中获得对于某个aspect的相关内容，并进行分类（判断是好评还是差评）</li>
+</ol>
+</li>
+</ol>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="获取Overall-Rating">
+<a class="anchor" href="#%E8%8E%B7%E5%8F%96Overall-Rating" aria-hidden="true"><span class="octicon octicon-link"></span></a>获取Overall Rating<a class="anchor-link" href="#%E8%8E%B7%E5%8F%96Overall-Rating"> </a>
+</h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>我们只需要对每个business的所有评论的结果求平均即可得到Overall Rating</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">Id</span> <span class="ow">in</span> <span class="n">business_id</span><span class="p">:</span>
+    <span class="n">star</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">review</span> <span class="ow">in</span> <span class="n">reviews</span><span class="p">[</span><span class="n">Id</span><span class="p">]:</span>
+        <span class="n">star</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">review</span><span class="p">[</span><span class="s1">'stars'</span><span class="p">])</span>
+    <span class="n">result</span><span class="p">[</span><span class="n">Id</span><span class="p">]</span> <span class="o">=</span> <span class="n">star</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="获取每一个business的aspect">
+<a class="anchor" href="#%E8%8E%B7%E5%8F%96%E6%AF%8F%E4%B8%80%E4%B8%AAbusiness%E7%9A%84aspect" aria-hidden="true"><span class="octicon octicon-link"></span></a>获取每一个business的aspect<a class="anchor-link" href="#%E8%8E%B7%E5%8F%96%E6%AF%8F%E4%B8%80%E4%B8%AAbusiness%E7%9A%84aspect"> </a>
+</h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>提取aspect，我们采用最简单的方法，对于每一个business，循环所有评论，统计评论中的名字词频，在去除stopwords之后，找到排名前5的词语，即作为该business的top 5 aspects。</p>
+<div class="highlight"><pre><span></span><span class="c1"># 从每个评论中提取名词</span>
+<span class="k">def</span> <span class="nf">extract_and_add_aspects</span><span class="p">(</span><span class="n">aspects_dict</span><span class="p">,</span> <span class="n">review</span><span class="p">):</span>
+    <span class="n">business_id</span> <span class="o">=</span> <span class="n">review</span><span class="p">[</span><span class="s1">'business_id'</span><span class="p">]</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">review</span><span class="p">[</span><span class="s1">'text'</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">word_tokenize</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="n">aspects</span> <span class="o">=</span> <span class="p">[</span><span class="n">tag</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">nltk</span><span class="o">.</span><span class="n">pos_tag</span><span class="p">(</span><span class="n">text</span><span class="p">,</span><span class="n">tagset</span><span class="o">=</span><span class="s1">'universal'</span><span class="p">)</span> <span class="k">if</span> <span class="n">tag</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'NOUN'</span><span class="p">]</span>
+    <span class="n">aspects_dict</span><span class="p">[</span><span class="n">business_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">aspects</span><span class="p">)</span>
+
+<span class="c1"># 对于每一个business，提取在评论中词频最高的5个名词（去除stopword之后）</span>
+<span class="k">def</span> <span class="nf">get_top_5_aspects</span><span class="p">(</span><span class="n">aspects_dict</span><span class="p">,</span> <span class="n">business_id</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">chain</span><span class="o">.</span><span class="n">from_iterable</span><span class="p">(</span><span class="n">aspects_dict</span><span class="p">[</span><span class="n">business_id</span><span class="p">]))</span>
+    <span class="n">sorted_l</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">l</span><span class="p">)</span><span class="o">.</span><span class="n">most_common</span><span class="p">()</span>
+    <span class="n">top_5_aspects</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sorted_l</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">top_5_aspects</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">elif</span> <span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="n">stopwords</span><span class="o">.</span><span class="n">words</span><span class="p">(</span><span class="s1">'english'</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">top_5_aspects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">top_5_aspects</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h4 id="获取对于aspect的评价">
+<a class="anchor" href="#%E8%8E%B7%E5%8F%96%E5%AF%B9%E4%BA%8Easpect%E7%9A%84%E8%AF%84%E4%BB%B7" aria-hidden="true"><span class="octicon octicon-link"></span></a>获取对于aspect的评价<a class="anchor-link" href="#%E8%8E%B7%E5%8F%96%E5%AF%B9%E4%BA%8Easpect%E7%9A%84%E8%AF%84%E4%BB%B7"> </a>
+</h4>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>为了获取对每一个aspect的评价，我们首先需要训练一个情感分析的模型。由于是baseline，我们首先尝试一个简单的模型来建立这个情感分析模型。本文采用tfidf vectorizer+random forest来建模。详细步骤分为以下几步</p>
+<ol>
+<li>对所有的review中的文本（text）进行tfidf变换</li>
+<li>将tfidf生成的矩阵作为输入，review的stars作为输出进行模型的训练。</li>
+<li>用random forest来模型进行训练。因为这里的stars的取值为[0,1,2,3,4,5],　是一个有序的分类问题，我们也可以把该问题看成是一个回归问题，用regressor的效果会更好</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">TfidfVectorizer</span>
+<span class="n">tidif_vectorizer</span> <span class="o">=</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">stop_words</span><span class="o">=</span><span class="s1">'english'</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+<span class="n">review_tidif_vector</span> <span class="o">=</span> <span class="n">tidif_vectorizer</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df_review</span><span class="p">[</span><span class="s1">'text'</span><span class="p">])</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">review_tidif_vector</span><span class="p">,</span> <span class="n">df_review</span><span class="p">[</span><span class="s1">'stars'</span><span class="p">])</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>训练完模型之后，我们还需要做关键的另一步，就是从用户评论中获取跟对应aspect相关的部分。这里，我们采取最简单的方法，首先按标点符号(这里我们只用了',.!')将用户评价进行切分。然后对于每个aspect，如果分句中出现了他，则判断该分局与这个aspect有关。</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">get_segment</span><span class="p">(</span><span class="n">aspect</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="sd">'''</span>
+<span class="sd">    Input an aspect and a text, the function will return the setences contain the aspect,</span>
+<span class="sd">    if there are no such aspec the segment could be empty list.</span>
+<span class="sd">    '''</span>
+    <span class="n">setences</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'[,.!]'</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">segment</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">setences</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">aspect</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">segment</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">segment</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>完成了上两步后，我们既可以对每一个business的每一个review进行分析，求得最终结果。</p>
+<div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">review</span> <span class="ow">in</span> <span class="n">business_id</span><span class="o">.</span><span class="n">get_reviews</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">review</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">aspect1</span><span class="p">):</span>
+    <span class="n">review_segment</span> <span class="o">=</span> <span class="n">get_segment</span><span class="p">(</span><span class="n">review</span><span class="p">,</span> <span class="n">aspect</span><span class="p">)</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="n">sentiment_model</span><span class="o">.</span><span class="n">predict_prob</span><span class="p">(</span><span class="n">review_segment</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">score</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+        <span class="n">pos_sent</span><span class="p">[</span><span class="n">review</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">neg_sent</span><span class="p">[</span><span class="n">review</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+</pre></div>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>在文本数据的预处理方面，常用的还有count vectorizer和word embedding， count vectorizer的效果比起tfidf略微差了一点，word embedding对结果会有所提高。另外，在情感分析模型的构建中，还可以有很多其他的方法，例如目前最流行的Bert。或者也可以利用LSTM来构建模型。在这方面，如果有兴趣可以参考<a href="https://www.kaggle.com/poonaml/bidirectional-lstm-spacy-on-yelp-reviews%E3%80%82">https://www.kaggle.com/poonaml/bidirectional-lstm-spacy-on-yelp-reviews。</a> 结果会比baseline有很大的提升。不过如果想要尝试这类深度学习的方法，必须先准备好GPU。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>对于Aspect的抽取，Segment的抽取。本文的方法比较基础，这是考虑了最基础的情况。这些方面的抽取也可以考虑通过训练模型来实现。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="4.-结果">
+<a class="anchor" href="#4.-%E7%BB%93%E6%9E%9C" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. 结果<a class="anchor-link" href="#4.-%E7%BB%93%E6%9E%9C"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>以下给出一个对于某个business的结果精选。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>========= sample result for business_id jRfQX8enRhWHf7V5zP5U8g =========</p>
+<p>Business Name:  The Gelato Spot</p>
+<p>Overall Rating:  4.058315334773218</p>
+<p>Aspects1 :gelato, rating:3.7201255688450567,</p>
+<p>pos_sample: ['This review is only with respect to their gelato', "We haven't yet ventured beyond gelato but will make it our next stop when we're in the mood for pizza", 'The gelato LOOKS delicious from the get-go', 'The guy behind the gelato counter was very helpful and friendly', 'I saw a decent amount of customer flow and the employees were constantly making gelato in the back'],</p>
+<p>neg_sample: ["Worst gelato I've had", 'The girls serving gelato had horrible attitudes and kept pushing me off to each other (they openly said they did not want to wait on me and told each other to just have 
+me wait and to help someone else)', 'their gelato was nothing special']</p>
+<p>Aspects2 :pizza, rating:3.6547648329047857,</p>
+<p>pos_sample: ["We haven't yet ventured beyond gelato but will make it our next stop when we're in the mood for pizza", "one of these days I'll try the pizza place as well and I'm sure it won't disappoint", 'Vegetarian Friendly Entree: Honey Basil Pizza\nDelicious pizza with the sweet and savory combination', 'One pizza is a perfect serving for one person', "I'm the type of 
+person that can never choose the type of pizza I want"],</p>
+<p>neg_sample: ['Showed up Saturday night to order a pizza and was told I could order but had to take it to go since they were closing in 30 minutes', 'Was told it took 15 minutes for the pizza to be ready', 'Worst pizza I have ever had', 'Lean cuisine pizzas have more flavor', "the margherite pizza was the worst I've had"]</p>
+<p>Aspects3 :place, rating:3.671313509696845,</p>
+<p>pos_sample: ['The place is very clean and nicely decorated', 'This place is great', 'The place is conveniently located in a corner location within a pizzeria', 'The location is clean and the place is quaint and comfortable', 'I frequent this place more often than I care to admit but with free samples and a great variety of different gelato flavors how could I not? Some common reasons why you might find me in Gelato Spot:\n\n- Holiday\n- Bad Day\n- Good Day\n- Normal Day\n- Sunday'], neg_sample: ['I decided to order pick up using the Eat2 services for lunch since my work place is walking distance from the restaurant', 'After helping them I told her I was there to pick up an order i placed using the Yelp app', 'I showed her the charge from my bank account and she placed the order to the cooks', 'I had to rush back to my work place since I only have a 30min lunch']</p>
+<p>Aspects4 :flavors, rating:3.6733356958870567,</p>
+<p>pos_sample: ['Great flavors and good quality', 'Their flavors are all delicious', 'and they are great at suggesting new flavors', 'and they have so many flavors to choose from', "We haven't been disappointed in any flavors that we've tried:  tiramisu"],</p>
+<p>neg_sample: []</p>
+<p>Aspects5 :spot, rating:3.6346406123098576,</p>
+<p>pos_sample: ['I was pleasantly surprised with this spot', 'It hit the spot', 'I am so happy that we found this spot and if I ever come back', 'This review is for Wood Fired pizza which is connected to the gelato spot', 'The G spot has it all'],</p>
+<p>neg_sample: ['My daughter read about their cakes on their website so when I asked her where I should get her birthday cake she told me that Gelato spot had cakes with buttercream frosting(her favorite)']</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h2 id="4.-其他尝试">
+<a class="anchor" href="#4.-%E5%85%B6%E4%BB%96%E5%B0%9D%E8%AF%95" aria-hidden="true"><span class="octicon octicon-link"></span></a>4. 其他尝试<a class="anchor-link" href="#4.-%E5%85%B6%E4%BB%96%E5%B0%9D%E8%AF%95"> </a>
+</h2>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>搭建一个情感分析系统需要牵扯到很多方面，任何一个环节都需要注意。如果有一个环节出错，都会影响到整个系统的表现。例如Aspect的抽取，Segment的抽取，或者是模型的构建。</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered">
+<div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p></p>
+<div class="footnotes"><p id="fn-1">1. <a href="https://zh.wikipedia.org/wiki/%E6%96%87%E6%9C%AC%E6%83%85%E6%84%9F%E5%88%86%E6%9E%90">文本情感分析</a><a href="#fnref-1" class="footnote footnotes">↩</a></p></div>
+<div class="footnotes"><p id="fn-2">2. <a href="https://www.kaggle.com/poonaml/bidirectional-lstm-spacy-on-yelp-reviews">Bidirectional LSTM, SpaCy on Yelp Reviews</a><a href="#fnref-2" class="footnote footnotes">↩</a></p></div>
+<div class="footnotes"><p id="fn-3">3. <a href="https://www.yelp.com/dataset/documentation/main">Yelp Dataset</a><a href="#fnref-3" class="footnote footnotes">↩</a></p></div>
+
+</div>
+</div>
+</div>
+</div>
+
+
+
+  </div><!-- from https://github.com/utterance/utterances -->
+<script src="https://utteranc.es/client.js"
+        repo="xubujie/DataScienceBlog"
+        issue-term="title"
+        label="blogpost-comment"
+        theme="github-light"
+        crossorigin="anonymous"
+        async>
+</script><a class="u-url" href="/DataScienceBlog/nlp/2020/08/07/Sentiment-Analysis-System.html" hidden></a>
+</article>
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/DataScienceBlog/"></data>
+
+  <div class="wrapper">
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col">
+        <p class="feed-subscribe">
+          <a href="/DataScienceBlog/feed.xml">
+            <svg class="svg-icon orange">
+              <use xlink:href="/DataScienceBlog/assets/minima-social-icons.svg#rss"></use>
+            </svg><span>Subscribe</span>
+          </a>
+        </p>
+      </div>
+      <div class="footer-col">
+        <p>Sharing my learning and idea</p>
+      </div>
+    </div>
+
+    <div class="social-links"><ul class="social-media-list"><li><a rel="me" href="https://github.com/fastai" title="fastai"><svg class="svg-icon grey"><use xlink:href="/DataScienceBlog/assets/minima-social-icons.svg#github"></use></svg></a></li><li><a rel="me" href="https://twitter.com/fastdotai" title="fastdotai"><svg class="svg-icon grey"><use xlink:href="/DataScienceBlog/assets/minima-social-icons.svg#twitter"></use></svg></a></li></ul>
+</div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
