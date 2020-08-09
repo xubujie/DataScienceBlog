@@ -12,3 +12,10 @@ You must save your notebook with the naming convention `YYYY-MM-DD-*.ipynb`.  Ex
 If you fail to name your file correctly, `fastpages` will automatically attempt to fix the problem by prepending the last modified date of your notebook. However, it is recommended that you name your files properly yourself for more transparency.
 
 See [Writing Blog Posts With Jupyter](https://github.com/fastai/fastpages#writing-blog-posts-with-jupyter) for more details.
+
+
+# 写作计划
+
+1. Transformer源码解读
+2. pytorch中的size
+3. Bert源码解读
